@@ -1,0 +1,154 @@
+{
+  "sources": [
+    {
+      "sourceName": "SEC EDGAR",
+      "domain": "sec.gov",
+      "sourceType": "regulator",
+      "credibilityScore": 98,
+      "biasRisk": "low",
+      "knownSlant": "official",
+      "includeInDecision": true,
+      "notes": "Primary source for US regulatory filings"
+    },
+    {
+      "sourceName": "Federal Reserve",
+      "domain": "federalreserve.gov",
+      "sourceType": "central_bank",
+      "credibilityScore": 97,
+      "biasRisk": "low",
+      "knownSlant": "official",
+      "includeInDecision": true,
+      "notes": "Official central bank communications"
+    },
+    {
+      "sourceName": "White House",
+      "domain": "whitehouse.gov",
+      "sourceType": "government",
+      "credibilityScore": 95,
+      "biasRisk": "medium",
+      "knownSlant": "political",
+      "includeInDecision": true,
+      "notes": "Official but politically framed"
+    },
+    {
+      "sourceName": "Company IR",
+      "domain": "investor",
+      "sourceType": "official_company",
+      "credibilityScore": 85,
+      "biasRisk": "high",
+      "knownSlant": "official/promotional",
+      "includeInDecision": true,
+      "notes": "High factual credibility but company-positive framing"
+    },
+    {
+      "sourceName": "Reuters",
+      "domain": "reuters.com",
+      "sourceType": "established_financial_press",
+      "credibilityScore": 88,
+      "biasRisk": "low",
+      "knownSlant": "market-news",
+      "includeInDecision": true,
+      "notes": "Established wire service"
+    },
+    {
+      "sourceName": "Bloomberg",
+      "domain": "bloomberg.com",
+      "sourceType": "established_financial_press",
+      "credibilityScore": 87,
+      "biasRisk": "low",
+      "knownSlant": "market-news",
+      "includeInDecision": true,
+      "notes": "Established financial press"
+    },
+    {
+      "sourceName": "Wall Street Journal",
+      "domain": "wsj.com",
+      "sourceType": "established_financial_press",
+      "credibilityScore": 86,
+      "biasRisk": "low",
+      "knownSlant": "market-news",
+      "includeInDecision": true,
+      "notes": "Major financial newspaper"
+    },
+    {
+      "sourceName": "Defense News",
+      "domain": "defensenews.com",
+      "sourceType": "specialist_defence_press",
+      "credibilityScore": 82,
+      "biasRisk": "medium",
+      "knownSlant": "market-news",
+      "includeInDecision": true,
+      "notes": "Specialist defence industry coverage"
+    },
+    {
+      "sourceName": "Breaking Defense",
+      "domain": "breakingdefense.com",
+      "sourceType": "specialist_defence_press",
+      "credibilityScore": 80,
+      "biasRisk": "medium",
+      "knownSlant": "market-news",
+      "includeInDecision": true,
+      "notes": "Defence policy and contracts"
+    },
+    {
+      "sourceName": "CNBC",
+      "domain": "cnbc.com",
+      "sourceType": "established_financial_press",
+      "credibilityScore": 75,
+      "biasRisk": "medium",
+      "knownSlant": "market-news",
+      "includeInDecision": true,
+      "notes": "Fast market news, occasional sensationalism"
+    },
+    {
+      "sourceName": "Seeking Alpha",
+      "domain": "seekingalpha.com",
+      "sourceType": "analyst/blog",
+      "credibilityScore": 55,
+      "biasRisk": "high",
+      "knownSlant": "retail-hype",
+      "includeInDecision": "default",
+      "notes": "Mixed quality contributor content"
+    },
+    {
+      "sourceName": "Twitter/X",
+      "domain": "twitter.com",
+      "sourceType": "social_media",
+      "credibilityScore": 25,
+      "biasRisk": "high",
+      "knownSlant": "retail-hype",
+      "includeInDecision": false,
+      "notes": "Low unless verified and corroborated"
+    },
+    {
+      "sourceName": "Reddit",
+      "domain": "reddit.com",
+      "sourceType": "social_media",
+      "credibilityScore": 20,
+      "biasRisk": "high",
+      "knownSlant": "retail-hype",
+      "includeInDecision": false,
+      "notes": "Unverified retail discussion"
+    },
+    {
+      "sourceName": "Unknown",
+      "domain": "unknown",
+      "sourceType": "unknown",
+      "credibilityScore": 35,
+      "biasRisk": "unknown",
+      "knownSlant": "unknown",
+      "includeInDecision": false,
+      "notes": "Single-source rumour until confirmed"
+    },
+    {
+      "sourceName": "Mock Data",
+      "domain": "localhost",
+      "sourceType": "unknown",
+      "credibilityScore": 50,
+      "biasRisk": "unknown",
+      "knownSlant": "unknown",
+      "includeInDecision": false,
+      "notes": "Sample data for offline/demo mode"
+    }
+  ]
+}

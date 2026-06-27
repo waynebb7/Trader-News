@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trader News Cockpit</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-icon">◈</span>
+        <h1>TRADER NEWS COCKPIT</h1>
+      </div>
+      <div class="instrument-selector" id="instrumentSelector">
+        <input type="text" id="instrumentSearch" placeholder="Search symbol or name..." autocomplete="off">
+        <div class="selector-dropdown hidden" id="selectorDropdown"></div>
+      </div>
+      <nav class="main-nav" id="mainNav">
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="news">News</button>
+        <button class="nav-btn" data-view="calendar">Calendar</button>
+        <button class="nav-btn" data-view="filings">Filings</button>
+        <button class="nav-btn" data-view="watchlist">Watchlist</button>
+        <button class="nav-btn" data-view="brief">Daily Brief</button>
+        <button class="nav-btn" data-view="decision-log">Decision Log</button>
+        <button class="nav-btn" data-view="settings">Settings</button>
+      </nav>
+      <button class="btn-icon" id="refreshBtn" title="Refresh data">↻</button>
+    </header>
+
+    <div id="statusBar" class="status-bar"></div>
+    <div id="alertsBar" class="alerts-bar"></div>
+
+    <main id="mainContent">
+      <div id="view-dashboard" class="view active"></div>
+      <div id="view-news" class="view"></div>
+      <div id="view-calendar" class="view"></div>
+      <div id="view-filings" class="view"></div>
+      <div id="view-watchlist" class="view"></div>
+      <div id="view-brief" class="view"></div>
+      <div id="view-decision-log" class="view"></div>
+      <div id="view-settings" class="view"></div>
+    </main>
+
+    <footer class="disclaimer">
+      <strong>Disclaimer:</strong> This application provides information and decision support only. It is not financial advice, does not guarantee market direction, and does not execute trades. You are responsible for all trading decisions. News sentiment and API data may be delayed, missing, or inaccurate.
+    </footer>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal" id="modalContent"></div>
+  </div>
+
+  <script src="components/utils.js"></script>
+  <script src="components/dashboard.js"></script>
+  <script src="components/pages.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>

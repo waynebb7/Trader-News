@@ -1,0 +1,8 @@
+{
+  "earningsWarningDays": 7,
+  "macroEventWarningHours": 24,
+  "politicalEventWarningHours": 12,
+  "highImpactTags": ["earnings", "fomc", "cpi", "nfp", "guidance", "contract", "sanctions", "tariff"],
+  "defenceRelevantTags": ["defence", "contract", "aerospace", "nato", "budget", "missile", "pentagon"],
+  "sentimentShiftThreshold": 0.25
+}

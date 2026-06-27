@@ -1,0 +1,85 @@
+{
+  "defaultInstrument": "LMT",
+  "instruments": [
+    {
+      "id": "spcx",
+      "symbol": "SPCX",
+      "displayName": "SpaceX",
+      "assetType": "equity",
+      "sector": "aerospace",
+      "tags": ["space", "defence-adjacent", "technology"],
+      "notes": "Ticker support depends on provider. Configure alternate symbol in settings if needed.",
+      "favourite": true,
+      "irUrl": null,
+      "secCik": null
+    },
+    {
+      "id": "lmt",
+      "symbol": "LMT",
+      "displayName": "Lockheed Martin",
+      "assetType": "equity",
+      "sector": "defence",
+      "tags": ["aerospace", "defence"],
+      "notes": "Major US defence contractor",
+      "favourite": true,
+      "irUrl": "https://investors.lockheedmartin.com/",
+      "secCik": "0000936468"
+    },
+    {
+      "id": "rtx",
+      "symbol": "RTX",
+      "displayName": "RTX Corporation",
+      "assetType": "equity",
+      "sector": "defence",
+      "tags": ["aerospace", "defence", "formerly-raytheon"],
+      "notes": "Formerly associated with Raytheon",
+      "favourite": true,
+      "irUrl": "https://investors.rtx.com/",
+      "secCik": "0000101829"
+    },
+    {
+      "id": "spy",
+      "symbol": "SPY",
+      "displayName": "SPDR S&P 500 ETF",
+      "assetType": "etf",
+      "sector": "broad-market",
+      "tags": ["index", "equity"],
+      "favourite": false,
+      "irUrl": null,
+      "secCik": null
+    },
+    {
+      "id": "eurusd",
+      "symbol": "EUR/USD",
+      "displayName": "Euro / US Dollar",
+      "assetType": "forex",
+      "sector": "fx",
+      "tags": ["major-pair"],
+      "favourite": false,
+      "irUrl": null,
+      "secCik": null
+    },
+    {
+      "id": "btcusd",
+      "symbol": "BTC/USD",
+      "displayName": "Bitcoin / US Dollar",
+      "assetType": "crypto",
+      "sector": "crypto",
+      "tags": ["digital-asset"],
+      "favourite": false,
+      "irUrl": null,
+      "secCik": null
+    },
+    {
+      "id": "gc",
+      "symbol": "GC",
+      "displayName": "Gold Futures",
+      "assetType": "commodity",
+      "sector": "commodities",
+      "tags": ["precious-metals"],
+      "favourite": false,
+      "irUrl": null,
+      "secCik": null
+    }
+  ]
+}

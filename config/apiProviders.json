@@ -1,0 +1,37 @@
+{
+  "marketData": {
+    "primary": "finnhub",
+    "fallback": ["alphaVantage", "fmp", "mock"],
+    "refreshSeconds": 30
+  },
+  "news": {
+    "primary": "finnhub",
+    "fallback": ["newsApi", "fmp", "mock"],
+    "refreshSeconds": 180
+  },
+  "earnings": {
+    "primary": "fmp",
+    "fallback": ["finnhub", "mock"],
+    "refreshSeconds": 3600
+  },
+  "economicCalendar": {
+    "primary": "fmp",
+    "fallback": ["mock"],
+    "refreshSeconds": 1800
+  },
+  "secFilings": {
+    "primary": "secEdgar",
+    "fallback": ["mock"],
+    "refreshSeconds": 900
+  },
+  "companyIR": {
+    "primary": "companyIR",
+    "fallback": ["mock"],
+    "refreshSeconds": 900
+  },
+  "politicalEvents": {
+    "primary": "politicalEvents",
+    "fallback": ["mock"],
+    "refreshSeconds": 600
+  }
+}

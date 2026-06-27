@@ -1,0 +1,32 @@
+{
+  "defence": {
+    "bullishKeywords": ["defence contract", "defence spending", "missile contract", "pentagon award", "backlog increase", "military budget", "nato spending", "weapons order", "defence budget"],
+    "bearishKeywords": ["defence cut", "program cancellation", "budget sequestration", "contract loss", "investigation", "export restriction"],
+    "neutralKeywords": ["maintenance contract", "routine delivery"]
+  },
+  "aerospace": {
+    "bullishKeywords": ["launch success", "satellite contract", "space contract", "nasa award", "commercial launch"],
+    "bearishKeywords": ["launch failure", "delay", "grounding", "safety review"],
+    "neutralKeywords": ["test flight", "demonstration"]
+  },
+  "broad-market": {
+    "bullishKeywords": ["rate cut", "soft landing", "beat estimates", "upgrade", "buyback"],
+    "bearishKeywords": ["recession", "rate hike", "miss estimates", "downgrade", "layoffs"],
+    "neutralKeywords": ["in line", "unchanged", "maintains"]
+  },
+  "fx": {
+    "bullishKeywords": ["dovish", "weak dollar", "rate differential narrows"],
+    "bearishKeywords": ["hawkish", "strong dollar", "intervention"],
+    "neutralKeywords": ["unchanged policy", "hold rates"]
+  },
+  "crypto": {
+    "bullishKeywords": ["etf approval", "institutional adoption", "halving"],
+    "bearishKeywords": ["sec enforcement", "hack", "ban", "crackdown"],
+    "neutralKeywords": ["regulation proposal", "consultation"]
+  },
+  "commodities": {
+    "bullishKeywords": ["supply cut", "inventory draw", "demand surge"],
+    "bearishKeywords": ["inventory build", "demand destruction", "oversupply"],
+    "neutralKeywords": ["steady demand", "unchanged output"]
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+.install-platform
+.env
+data/*.sqlite
+data/*.sqlite-wal
+data/*.sqlite-shm
+data/store.json
+*.log
+.DS_Store
+Thumbs.db
