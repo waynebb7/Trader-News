@@ -1,5 +1,4 @@
 node_modules/
-.install-platform
 .env
 data/*.sqlite
 data/*.sqlite-wal

@@ -1,17 +1,16 @@
 {
   "name": "trader-news-cockpit",
   "version": "1.0.0",
-  "description": "Local trading intelligence dashboard — decision support only",
+  "description": "Local trading intelligence dashboard — decision support only (Windows)",
   "main": "server/server.js",
   "scripts": {
     "start": "node scripts/launch.js",
-    "server": "node server/server.js",
-    "postinstall": "node scripts/postinstall.js",
-    "rebuild-native": "npm rebuild better-sqlite3 --build-from-source"
+    "server": "node server/server.js"
   },
   "engines": {
     "node": ">=18.0.0"
   },
+  "os": ["win32"],
   "dependencies": {
     "better-sqlite3": "^11.7.0",
     "cors": "^2.8.5",

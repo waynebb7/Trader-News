@@ -5,7 +5,7 @@ function getDataDir() {
   if (process.env.TRADER_NEWS_DATA_DIR) {
     return process.env.TRADER_NEWS_DATA_DIR;
   }
-  // Portable: data travels with the project folder (Windows PC ↔ MacBook)
+  // Data folder inside project (copy folder between Windows PCs)
   const portable = path.join(__dirname, '..', 'data');
   if (!fs.existsSync(portable)) {
     fs.mkdirSync(portable, { recursive: true });
