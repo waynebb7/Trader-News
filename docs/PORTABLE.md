@@ -1,116 +1,83 @@
-# Portable Setup — PC ↔ MacBook
+# Supported Platforms
 
-Trader News Cockpit is designed to live in a single folder you can copy between computers.
+Trader News Cockpit runs on these platforms. Copy the folder between them — dependencies reinstall automatically on first launch.
 
-## What You Need on Each Computer
+| Platform | Detected as | Start file | Node.js download |
+|----------|-------------|------------|------------------|
+| **Windows PC** | `win32-x64` | `START_TRADER_NEWS.bat` | [Windows 64-bit LTS](https://nodejs.org/) |
+| **Mac Intel** | `darwin-x64` | `START_TRADER_NEWS.command` | [macOS Intel (x64)](https://nodejs.org/) |
+| **Mac Apple Silicon** | `darwin-arm64` | `START_TRADER_NEWS.command` | [macOS Apple Silicon (ARM64)](https://nodejs.org/) |
 
-- **Node.js 18+** — [nodejs.org](https://nodejs.org/)
-- Nothing else — no global install, no registry, no admin rights
+## Moving Between Machines
 
-## Copy the Folder
+Each computer gets its own `node_modules` build. The launcher tracks this in `.install-platform`:
 
-Copy the whole `Trader-News` folder to:
+```
+win32-x64      → Windows PC
+darwin-x64     → Mac Intel
+darwin-arm64   → Mac Apple Silicon (M1/M2/M3/M4)
+```
 
-- Another Windows PC
-- Your MacBook
-- A USB stick
-- OneDrive / Dropbox (see note below)
+Copying from **PC → Mac Intel → Mac Apple Silicon** (or any combination) triggers a one-time reinstall. Your `.env`, `config/`, and `data/` travel with the folder.
 
-## First Launch on a New Computer
+**Do not copy `node_modules`** between machines — skip it when copying to save time.
 
-1. Run the start file for that OS:
-   - **Windows:** `START_TRADER_NEWS.bat`
-   - **Mac:** `START_TRADER_NEWS.command` (see Mac note below)
+## Node.js — Install the Right Build
 
-2. The launcher detects the new computer and runs `npm install` automatically.
+### Windows PC
+Download **Windows Installer (.msi)** — 64-bit LTS.
 
-3. Browser opens when the server is ready.
+### Mac Intel
+Download **macOS Installer** — choose the **Intel (x64)** build, or Universal (works on Intel Macs).
 
-You only wait for install **once per computer**. After that, startup is fast.
+### Mac Apple Silicon (M1/M2/M3/M4)
+Download **macOS Installer** — choose **Apple Silicon (ARM64)**, or Universal.
+
+Verify after install:
+
+```bash
+node -p "process.platform + '-' + process.arch"
+```
+
+Expected on Apple Silicon: `darwin-arm64`  
+Expected on Mac Intel: `darwin-x64`
+
+If Apple Silicon shows `darwin-x64`, you installed Intel Node under Rosetta — reinstall the ARM64 build from nodejs.org.
 
 ## Mac First-Time Setup
-
-When copying from Windows, execute permission may be missing. Run once in Terminal:
 
 ```bash
 cd /path/to/Trader-News
 chmod +x START_TRADER_NEWS.command start.sh
 ```
 
-Then double-click `START_TRADER_NEWS.command`.
+If native modules fail to build:
 
-If macOS blocks the file: **System Settings → Privacy & Security → Open Anyway**.
-
-## What Travels With the Folder
-
-| Item | Location | Notes |
-|------|----------|-------|
-| API keys | `.env` | Copy this file — never commit to git |
-| Watchlist & instruments | `config/instruments.json` | Editable |
-| Credibility rules | `config/sourceCredibility.json` | Editable |
-| Decision log | `data/trader-news.sqlite` | Local journal |
-| Daily briefs | `data/trader-news.sqlite` | Saved history |
-| Cache | `data/` | Safe to delete |
-
-## What Does NOT Travel (Rebuilt Automatically)
-
-| Item | Why |
-|------|-----|
-| `node_modules/` | Contains OS-specific native code (Windows ≠ Mac) |
-| `.install-platform` | Stamp file — regenerated on install |
-
-**Do not copy `node_modules` from PC to Mac** — the launcher will reinstall correctly.
-
-## Recommended Copy List
-
-Minimum to move:
-
-```
-Trader-News/
-├── config/          ← your settings
-├── .env             ← your API keys
-├── data/            ← your logs & briefs (optional)
-├── public/
-├── server/
-├── scripts/
-├── ... (all source files)
-├── package.json
-├── START_TRADER_NEWS.bat
-├── START_TRADER_NEWS.command
-└── start.sh
+```bash
+xcode-select --install
+npm rebuild better-sqlite3 --build-from-source
 ```
 
-Skip `node_modules/` to make copying faster.
+The app still works without SQLite — it falls back to JSON storage in `data/store.json`.
 
-## Cloud Sync (OneDrive / iCloud)
+## OneDrive / iCloud Sync
 
-If the folder syncs through OneDrive or iCloud:
+Exclude `node_modules/` from sync on all devices. If SQLite locks on synced folders, set in `.env`:
 
-- The app works, but SQLite files in `data/` can occasionally conflict
-- **Recommended:** point data to a local-only path in `.env`:
-
-Windows:
 ```env
-TRADER_NEWS_DATA_DIR=C:\Users\YourName\AppData\Local\TraderNewsCockpit
+# Windows
+TRADER_NEWS_DATA_DIR=C:\Users\You\AppData\Local\TraderNewsCockpit
+
+# Mac
+TRADER_NEWS_DATA_DIR=/Users/you/.trader-news-cockpit
 ```
 
-Mac:
-```env
-TRADER_NEWS_DATA_DIR=/Users/yourname/.trader-news-cockpit
-```
+## Troubleshooting by Platform
 
-Keep `.env` and `config/` in the synced folder; only data goes local.
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| Mac: "permission denied" | Run `chmod +x START_TRADER_NEWS.command start.sh` |
-| Mac: "node not found" | Install Node.js from nodejs.org |
-| npm install SSL error | Launcher retries automatically; or run `npm install --strict-ssl=false` |
-| Port in use | Close other instance or set `PORT=3848` in `.env` |
-| Blank page | Use http://127.0.0.1:3847 — do not open HTML files directly |
-
-## Stopping the App
-
-Press **Ctrl+C** in the terminal/command window.
+| Issue | Windows | Mac Intel | Mac Apple Silicon |
+|-------|---------|-----------|-------------------|
+| npm SSL error | Auto-retry in launcher | Auto-retry | Auto-retry |
+| Native module fail | Reinstall Node 64-bit | `xcode-select --install` | ARM64 Node + Xcode CLT |
+| Permission denied | Run `.bat` normally | `chmod +x *.command start.sh` | Same |
+| Port in use | Close other window | Same | Same |
+| Blank page | Use http://127.0.0.1:3847 | Same | Same |

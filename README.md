@@ -2,7 +2,9 @@
 
 A local desktop-hosted trading intelligence dashboard for stocks, forex, crypto, commodities, and defence/aerospace instruments. **Decision support only — not financial advice. Does not execute trades.**
 
-Runs on **Windows**, **macOS**, and **Linux**. Copy the folder to any computer — no install beyond Node.js.
+Runs on **Windows PC**, **Mac Intel**, and **Mac Apple Silicon (M1/M2/M3/M4)**. Copy the folder to any computer — dependencies reinstall automatically.
+
+See **`docs/PORTABLE.md`** for platform-specific Node.js downloads and setup.
 
 ---
 
@@ -12,19 +14,16 @@ Runs on **Windows**, **macOS**, and **Linux**. Copy the folder to any computer �
 2. Double-click **`START_TRADER_NEWS.bat`**
 3. Browser opens at **http://127.0.0.1:3847** when ready
 
-## Quick Start — Mac
+## Quick Start — Mac (Intel or Apple Silicon)
 
-1. Install [Node.js 18+](https://nodejs.org/)
+1. Install the correct **Node.js 18+** from [nodejs.org](https://nodejs.org/):
+   - **Intel Mac** → macOS Intel (x64) or Universal installer
+   - **Apple Silicon** → macOS Apple Silicon (ARM64) or Universal installer
 2. **First time only** — open Terminal in the folder and run:
    ```bash
    chmod +x START_TRADER_NEWS.command start.sh
    ```
 3. Double-click **`START_TRADER_NEWS.command`**
-
-   Or from Terminal:
-   ```bash
-   ./start.sh
-   ```
 
 ## Quick Start — Any OS (Terminal)
 
@@ -38,23 +37,15 @@ Open http://127.0.0.1:3847
 
 ---
 
-## Moving Between PC and MacBook
+## Moving Between PC, Mac Intel, and Mac Apple Silicon
 
-Copy the **entire folder** (USB drive, OneDrive, AirDrop, etc.).
+Copy the **entire folder**. On first launch on each new computer, dependencies reinstall for that platform (about 30–60 seconds).
 
-| Travels with folder | Rebuilt on each computer |
-|---------------------|---------------------------|
-| `.env` (API keys) | `node_modules/` |
-| `config/` | `.install-platform` |
-| `data/` (logs, briefs, cache) | |
+| Travels with folder | Rebuilt per computer |
+|---------------------|----------------------|
+| `.env`, `config/`, `data/` | `node_modules/` |
 
-On first launch on a **new computer**, the launcher automatically reinstalls dependencies for that machine (Windows vs Mac use different native modules). This takes about 30–60 seconds.
-
-**What to copy:** everything except `node_modules` (optional — it will be replaced anyway).
-
-**Your settings travel with you:** API keys in `.env`, watchlist in `config/`, decision logs and daily briefs in `data/`.
-
-See **`docs/PORTABLE.md`** for full details.
+**Skip `node_modules` when copying** — it is different on Windows vs Mac Intel vs Apple Silicon.
 
 ---
 

@@ -5,7 +5,9 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node scripts/launch.js",
-    "server": "node server/server.js"
+    "server": "node server/server.js",
+    "postinstall": "node scripts/postinstall.js",
+    "rebuild-native": "npm rebuild better-sqlite3 --build-from-source"
   },
   "engines": {
     "node": ">=18.0.0"

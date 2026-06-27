@@ -1,20 +1,27 @@
 #!/usr/bin/env node
 /**
- * Cross-platform launcher: install deps, start server, wait for health, open browser.
- * Works on Windows, macOS, and Linux.
+ * Cross-platform launcher — Windows PC, Mac Intel, Mac Apple Silicon.
  */
 const { spawn, execSync } = require('child_process');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
+const {
+  ROOT,
+  getPlatformKey,
+  getPlatformInfo,
+  readInstallStamp,
+  writeInstallStamp,
+  clearInstallStamp,
+  stampMismatchMessage,
+  verifyBetterSqlite3,
+  nativeBuildHints
+} = require('./platform');
 
-const ROOT = path.join(__dirname, '..');
 const PORT = parseInt(process.env.PORT || '3847', 10);
 const HOST = '127.0.0.1';
 const URL = `http://${HOST}:${PORT}`;
-const PLATFORM_KEY = `${process.platform}-${process.arch}`;
-const STAMP_FILE = path.join(ROOT, '.install-platform');
 
 process.chdir(ROOT);
 
@@ -32,18 +39,13 @@ function checkNode() {
   if (v[0] < 18) {
     fail(`Node.js 18+ required (found ${process.version}). Install from https://nodejs.org/`);
   }
-}
 
-function readInstallStamp() {
-  try {
-    return fs.readFileSync(STAMP_FILE, 'utf8').trim();
-  } catch {
-    return '';
+  const info = getPlatformInfo();
+  if (info.isAppleSilicon && process.arch === 'x64') {
+    log('  ⚠ Running Intel (x64) Node under Rosetta on Apple Silicon.');
+    log('    For best results install Apple Silicon Node from https://nodejs.org');
+    log('');
   }
-}
-
-function writeInstallStamp() {
-  fs.writeFileSync(STAMP_FILE, PLATFORM_KEY, 'utf8');
 }
 
 function removeNodeModules() {
@@ -51,11 +53,7 @@ function removeNodeModules() {
   if (!fs.existsSync(nm)) return;
   log('  Removing dependencies built for another computer...');
   fs.rmSync(nm, { recursive: true, force: true });
-  try {
-    fs.unlinkSync(STAMP_FILE);
-  } catch {
-    // ignore
-  }
+  clearInstallStamp();
 }
 
 function runNpmInstall() {
@@ -69,38 +67,70 @@ function runNpmInstall() {
   }
 }
 
+function runNpmRebuild() {
+  const env = { ...process.env, NODE_OPTIONS: '--use-system-ca' };
+  const opts = { cwd: ROOT, stdio: 'inherit', env };
+  const cmd = 'npm rebuild better-sqlite3 --build-from-source';
+  if (process.platform === 'win32') {
+    execSync(cmd, { ...opts, shell: true });
+  } else {
+    execSync(cmd, opts);
+  }
+}
+
 function ensureDeps() {
   const nm = path.join(ROOT, 'node_modules');
   const expressOk = fs.existsSync(path.join(nm, 'express'));
   const stamp = readInstallStamp();
-  const platformMatch = stamp === PLATFORM_KEY;
+  const platformKey = getPlatformKey();
+  const platformMatch = stamp === platformKey;
 
   if (expressOk && platformMatch) {
-    // Quick sanity check — native module must load on this machine
+    const sqlite = verifyBetterSqlite3(ROOT);
+    if (sqlite.ok) return;
+    log('  Native SQLite module needs rebuilding for this computer...');
     try {
-      require('better-sqlite3');
-      return;
+      runNpmRebuild();
+      if (verifyBetterSqlite3(ROOT).ok) {
+        writeInstallStamp();
+        return;
+      }
     } catch {
-      log('  Native modules need rebuilding for this computer...');
-      removeNodeModules();
+      log('  Rebuild failed — app will use JSON storage (still fully usable).');
+      nativeBuildHints().forEach((h) => log('    ' + h));
+      return;
     }
-  } else if (expressOk && !platformMatch) {
-    log(`  Folder moved to ${process.platform} — reinstalling for this machine...`);
+  }
+
+  if (expressOk && !platformMatch) {
+    log('  ' + stampMismatchMessage(stamp));
     removeNodeModules();
   }
 
-  log('  Installing dependencies (first run on this computer)...');
-  log(`  Platform: ${PLATFORM_KEY}`);
+  log('  Installing dependencies for this computer (one-time)...');
+  log(`  Target: ${getPlatformInfo().label} [${platformKey}]`);
   try {
     runNpmInstall();
     writeInstallStamp();
+    const sqlite = verifyBetterSqlite3(ROOT);
+    if (!sqlite.ok) {
+      log('  SQLite unavailable — trying rebuild...');
+      try {
+        runNpmRebuild();
+      } catch {
+        log('  Using JSON file storage instead of SQLite.');
+        nativeBuildHints().slice(0, 3).forEach((h) => log('    ' + h));
+      }
+    }
   } catch {
     log('  Retrying npm install with SSL workaround...');
     try {
+      const env = { ...process.env, NODE_OPTIONS: '--use-system-ca' };
+      const cmd = 'npm install --strict-ssl=false';
       if (process.platform === 'win32') {
-        execSync('npm install --strict-ssl=false', { cwd: ROOT, stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--use-system-ca' }, shell: true });
+        execSync(cmd, { cwd: ROOT, stdio: 'inherit', env, shell: true });
       } else {
-        execSync('npm install --strict-ssl=false', { cwd: ROOT, stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--use-system-ca' } });
+        execSync(cmd, { cwd: ROOT, stdio: 'inherit', env });
       }
       writeInstallStamp();
     } catch {
@@ -162,10 +192,12 @@ function openBrowser() {
 }
 
 async function main() {
+  const info = getPlatformInfo();
+
   console.log('');
   console.log('  ========================================');
   console.log('   TRADER NEWS COCKPIT - Starting...');
-  console.log(`   ${process.platform} / ${process.arch}`);
+  console.log(`   ${info.label}`);
   console.log('  ========================================');
   console.log('');
 
