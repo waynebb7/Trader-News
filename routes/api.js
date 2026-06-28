@@ -7,7 +7,7 @@ const {
   getSourceCredibility,
   getApiProviders
 } = require('../server/configLoader');
-const { getDashboardData, getWatchlistData, getProviderStatus } = require('../services/orchestrator');
+const { getDashboardData, getWatchlistData, getProviderStatus, runProviderDiagnostics } = require('../services/orchestrator');
 const { generateDailyBrief, generateAllBriefs } = require('../services/briefGenerator');
 const {
   getDecisionLogs,
@@ -115,6 +115,20 @@ router.get('/watchlist', async (req, res) => {
 
 router.get('/providers/status', (req, res) => {
   res.json(getProviderStatus());
+});
+
+router.post('/providers/test', async (req, res) => {
+  try {
+    const provider = req.body?.provider;
+    const equity = findInstrument(req.body?.symbol || 'LMT') || findInstrument('LMT');
+    const filing = (getAllInstruments().find(i => i.secCik) || equity);
+    const ir = (getAllInstruments().find(i => i.irUrl) || equity);
+
+    const results = await runProviderDiagnostics(provider, { equity, filing, ir });
+    res.json({ results, testedAt: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.get('/briefs', (req, res) => {

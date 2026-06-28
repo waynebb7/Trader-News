@@ -23,7 +23,54 @@ class AlphaVantageAdapter extends BaseAdapter {
     return data;
   }
 
+  getFxPair(instrument) {
+    if (instrument.symbol === '6E' || (instrument.assetType === 'commodity' && instrument.sector === 'fx')) {
+      return { from: 'EUR', to: 'USD' };
+    }
+    if (instrument.symbol && instrument.symbol.includes('/')) {
+      const parts = instrument.symbol.split('/');
+      if (parts.length === 2) {
+        return { from: parts[0].trim().toUpperCase(), to: parts[1].trim().toUpperCase() };
+      }
+    }
+    return null;
+  }
+
   async getQuote(instrument) {
+    const fxPair = this.getFxPair(instrument);
+    if (fxPair) {
+      const data = await this.request({
+        function: 'CURRENCY_EXCHANGE_RATE',
+        from_currency: fxPair.from,
+        to_currency: fxPair.to
+      });
+      const r = data['Realtime Currency Exchange Rate'];
+      if (!r || !r['5. Exchange Rate']) throw new Error('No FX quote from Alpha Vantage');
+      const price = parseFloat(r['5. Exchange Rate']);
+      return {
+        symbol: instrument.symbol,
+        price,
+        change: 0,
+        changePercent: 0,
+        previousClose: price,
+        dayHigh: price,
+        dayLow: price,
+        week52High: null,
+        week52Low: null,
+        volume: null,
+        atr: null,
+        gapStatus: 'none',
+        marketStatus: 'FX',
+        preMarket: null,
+        afterHours: null,
+        swingHigh: price,
+        swingLow: price,
+        provider: 'alphaVantage',
+        isMock: false,
+        updatedAt: new Date().toISOString()
+      };
+    }
+
     const data = await this.request({ function: 'GLOBAL_QUOTE', symbol: instrument.symbol });
     const q = data['Global Quote'];
     if (!q || !q['05. price']) throw new Error('No quote from Alpha Vantage');

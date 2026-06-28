@@ -60,6 +60,18 @@
       "secCik": null
     },
     {
+      "id": "eurusdfut",
+      "symbol": "6E",
+      "displayName": "EUR/USD Futures (CME 6E)",
+      "assetType": "commodity",
+      "sector": "fx",
+      "tags": ["futures", "fx", "cme"],
+      "notes": "Provider symbol support can vary. If unavailable, use EUR/USD as a spot proxy.",
+      "favourite": false,
+      "irUrl": null,
+      "secCik": null
+    },
+    {
       "id": "btcusd",
       "symbol": "BTC/USD",
       "displayName": "Bitcoin / US Dollar",

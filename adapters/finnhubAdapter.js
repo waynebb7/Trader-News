@@ -22,6 +22,10 @@ class FinnhubAdapter extends BaseAdapter {
   }
 
   normalizeSymbol(instrument) {
+    // Proxy EUR/USD futures (6E) to spot FX symbol supported by Finnhub.
+    if (instrument.symbol === '6E' || (instrument.assetType === 'commodity' && instrument.sector === 'fx')) {
+      return 'OANDA:EUR_USD';
+    }
     if (instrument.assetType === 'forex') return `OANDA:${instrument.symbol.replace('/', '_')}`;
     if (instrument.assetType === 'crypto') return `BINANCE:${instrument.symbol.split('/')[0]}USDT`;
     return instrument.symbol;

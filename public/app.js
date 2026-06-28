@@ -6,8 +6,49 @@
     currentSymbol: 'LMT',
     currentView: 'dashboard',
     dashboardData: null,
-    eventSource: null
+    eventSource: null,
+    reconnectTimer: null,
+    reconnectAttempts: 0,
+    streamState: 'connecting'
   };
+
+  function persistState() {
+    try {
+      localStorage.setItem('tnc.currentSymbol', state.currentSymbol || 'LMT');
+      localStorage.setItem('tnc.currentView', state.currentView || 'dashboard');
+    } catch (e) { /* ignore storage errors */ }
+  }
+
+  function restoreState() {
+    try {
+      var savedSymbol = localStorage.getItem('tnc.currentSymbol');
+      var savedView = localStorage.getItem('tnc.currentView');
+      if (savedSymbol) state.currentSymbol = savedSymbol;
+      if (savedView) state.currentView = savedView;
+    } catch (e) { /* ignore storage errors */ }
+  }
+
+  function setConnectionState(nextState, message) {
+    state.streamState = nextState;
+    var indicator = document.getElementById('connectionIndicator');
+    if (!indicator) return;
+    indicator.classList.remove('live', 'connecting', 'offline');
+    indicator.classList.add(nextState);
+    if (nextState === 'live') indicator.textContent = 'Live';
+    else if (nextState === 'offline') indicator.textContent = 'Offline';
+    else indicator.textContent = 'Connecting...';
+    if (message) indicator.title = message;
+  }
+
+  function scheduleReconnect() {
+    if (state.reconnectTimer) return;
+    state.reconnectAttempts += 1;
+    var delay = Math.min(3000 + (state.reconnectAttempts * 1000), 12000);
+    state.reconnectTimer = setTimeout(function() {
+      state.reconnectTimer = null;
+      connectSSE();
+    }, delay);
+  }
 
   async function loadInstruments() {
     var data = await TNC.fetchJSON('/instruments');
@@ -63,12 +104,14 @@
     var inst = getCurrentInstrument();
     document.getElementById('instrumentSearch').value = inst ? inst.symbol + ' — ' + inst.displayName : symbol;
     document.getElementById('selectorDropdown').classList.add('hidden');
+    persistState();
     loadDashboard();
     connectSSE();
   }
 
   function switchView(view) {
     state.currentView = view;
+    persistState();
     document.querySelectorAll('.nav-btn').forEach(function(btn) {
       btn.classList.toggle('active', btn.dataset.view === view);
     });
@@ -89,7 +132,12 @@
 
   function connectSSE() {
     if (state.eventSource) state.eventSource.close();
+    setConnectionState('connecting', 'Connecting to live updates...');
     state.eventSource = new EventSource('/api/events?symbol=' + encodeURIComponent(state.currentSymbol));
+    state.eventSource.onopen = function() {
+      state.reconnectAttempts = 0;
+      setConnectionState('live', 'Live updates connected');
+    };
     state.eventSource.onmessage = function(ev) {
       try {
         var msg = JSON.parse(ev.data);
@@ -103,9 +151,34 @@
         }
       } catch (e) { /* ignore */ }
     };
+    state.eventSource.onerror = function() {
+      setConnectionState('offline', 'Live updates disconnected. Reconnecting...');
+      if (state.eventSource) state.eventSource.close();
+      scheduleReconnect();
+    };
+  }
+
+  function bindShortcuts() {
+    document.addEventListener('keydown', function(e) {
+      var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      var typing = tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable);
+
+      if (!typing && e.key === '/') {
+        e.preventDefault();
+        document.getElementById('instrumentSearch').focus();
+        return;
+      }
+
+      if (!typing && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        loadDashboard(true);
+        TNC.showToast('Refreshing...');
+      }
+    });
   }
 
   async function init() {
+    restoreState();
     document.getElementById('mainNav').addEventListener('click', function(e) {
       var btn = e.target.closest('.nav-btn');
       if (btn) switchView(btn.dataset.view);
@@ -130,8 +203,26 @@
       switchView('dashboard');
     });
 
+    window.addEventListener('instruments-changed', function() {
+      loadInstruments().catch(function() {});
+    });
+
+    bindShortcuts();
+
     await loadInstruments();
+    if (!state.instruments.some(function(i) { return i.symbol === state.currentSymbol; })) {
+      state.currentSymbol = 'LMT';
+    }
     selectInstrument(state.currentSymbol || 'LMT');
+    switchView(state.currentView || 'dashboard');
+
+    try {
+      if (!localStorage.getItem('tnc.shortcutTipShown')) {
+        TNC.showToast('Tip: press / to search instruments, and R to refresh data.');
+        localStorage.setItem('tnc.shortcutTipShown', '1');
+      }
+    } catch (e) { /* ignore storage errors */ }
+
     setInterval(function() { loadDashboard(); }, 60000);
   }
 

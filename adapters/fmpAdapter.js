@@ -21,8 +21,17 @@ class FmpAdapter extends BaseAdapter {
     return res.json();
   }
 
+  normalizeQuoteSymbol(instrument) {
+    // Proxy EUR/USD futures (6E) to spot FX symbol supported by FMP.
+    if (instrument.symbol === '6E' || (instrument.assetType === 'commodity' && instrument.sector === 'fx')) {
+      return 'EURUSD';
+    }
+    return instrument.symbol;
+  }
+
   async getQuote(instrument) {
-    const data = await this.request(`/quote/${encodeURIComponent(instrument.symbol)}`);
+    const requestSymbol = this.normalizeQuoteSymbol(instrument);
+    const data = await this.request(`/quote/${encodeURIComponent(requestSymbol)}`);
     const q = Array.isArray(data) ? data[0] : data;
     if (!q || q.price == null) throw new Error('No quote from FMP');
 

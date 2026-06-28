@@ -16,6 +16,23 @@ const mock = require('../adapters/mockAdapter');
 const marketAdapters = [finnhub, alphaVantage, fmp, mock];
 const newsAdapters = [finnhub, newsApi, fmp, mock];
 
+function getMarketAdaptersForInstrument(instrument) {
+  const isFxInstrument = instrument && (instrument.assetType === 'forex' || instrument.sector === 'fx');
+  if (isFxInstrument) {
+    // Prefer Alpha Vantage FX endpoint for EUR/USD and 6E proxy.
+    return [alphaVantage, finnhub, fmp, mock];
+  }
+  return marketAdapters;
+}
+
+function getNewsAdaptersForInstrument(instrument) {
+  const isFxInstrument = instrument && (instrument.assetType === 'forex' || instrument.sector === 'fx');
+  if (isFxInstrument) {
+    return [newsApi, finnhub, fmp, mock];
+  }
+  return newsAdapters;
+}
+
 async function tryAdapters(adapters, method, instrument, ttlKey, ttlMs) {
   const errors = [];
   for (const adapter of adapters) {
@@ -52,6 +69,122 @@ function getProviderStatus() {
   return status;
 }
 
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    })
+  ]);
+}
+
+function sanitizeDiagnosticMessage(message) {
+  let text = String(message || 'Unknown error');
+  const possibleSecrets = [
+    process.env.ALPHA_VANTAGE_API_KEY,
+    process.env.FINNHUB_API_KEY,
+    process.env.FMP_API_KEY,
+    process.env.NEWS_API_KEY,
+    process.env.POLYGON_API_KEY
+  ].filter(Boolean);
+
+  for (const secret of possibleSecrets) {
+    if (secret) text = text.split(secret).join('[REDACTED]');
+  }
+
+  return text.slice(0, 400);
+}
+
+async function probeProvider(name, instruments = {}) {
+  const startedAt = Date.now();
+  const checkedAt = new Date().toISOString();
+
+  const equity = instruments.equity || { symbol: 'LMT', displayName: 'Lockheed Martin', assetType: 'equity' };
+  const filingInstrument = instruments.filing || { ...equity, secCik: '0000936468' };
+  const irInstrument = instruments.ir || { ...equity, irUrl: 'https://investors.lockheedmartin.com/' };
+
+  const probes = {
+    finnhub: async () => {
+      if (!finnhub.isConfigured()) return { status: 'skipped', message: 'Missing API key' };
+      await finnhub.getQuote(equity);
+      return { status: 'pass', message: 'Quote request succeeded' };
+    },
+    alphaVantage: async () => {
+      if (!alphaVantage.isConfigured()) return { status: 'skipped', message: 'Missing API key' };
+      await alphaVantage.getQuote(equity);
+      return { status: 'pass', message: 'Quote request succeeded' };
+    },
+    fmp: async () => {
+      if (!fmp.isConfigured()) return { status: 'skipped', message: 'Missing API key' };
+      await fmp.getQuote(equity);
+      return { status: 'pass', message: 'Quote request succeeded' };
+    },
+    newsApi: async () => {
+      if (!newsApi.isConfigured()) return { status: 'skipped', message: 'Missing API key' };
+      await newsApi.getNews(equity);
+      return { status: 'pass', message: 'News request succeeded' };
+    },
+    secEdgar: async () => {
+      await secEdgar.getFilings(filingInstrument);
+      return { status: 'pass', message: 'Filings request succeeded' };
+    },
+    politicalEvents: async () => {
+      await politicalEvents.getPoliticalEvents();
+      return { status: 'pass', message: 'Political feed request succeeded' };
+    },
+    companyIR: async () => {
+      await companyIR.getCompanyIR(irInstrument);
+      return { status: 'pass', message: 'IR request succeeded' };
+    },
+    mock: async () => {
+      await mock.getQuote(equity);
+      return { status: 'pass', message: 'Mock provider available' };
+    }
+  };
+
+  const probe = probes[name];
+  if (!probe) {
+    return {
+      name,
+      status: 'fail',
+      message: 'Unknown provider',
+      checkedAt,
+      latencyMs: Date.now() - startedAt
+    };
+  }
+
+  try {
+    const result = await withTimeout(probe(), 12000, `${name} probe`);
+    return {
+      name,
+      status: result.status,
+      message: result.message,
+      checkedAt,
+      latencyMs: Date.now() - startedAt
+    };
+  } catch (err) {
+    return {
+      name,
+      status: 'fail',
+      message: sanitizeDiagnosticMessage(err.message),
+      checkedAt,
+      latencyMs: Date.now() - startedAt
+    };
+  }
+}
+
+async function runProviderDiagnostics(providerName, instruments = {}) {
+  const allNames = ['finnhub', 'alphaVantage', 'fmp', 'newsApi', 'secEdgar', 'politicalEvents', 'companyIR', 'mock'];
+  const names = providerName ? [providerName] : allNames;
+  const results = {};
+
+  for (const name of names) {
+    results[name] = await probeProvider(name, instruments);
+  }
+
+  return results;
+}
+
 async function getDashboardData(instrument, forceRefresh = false) {
   addRecentInstrument(instrument.symbol);
   const config = getApiProviders();
@@ -61,7 +194,7 @@ async function getDashboardData(instrument, forceRefresh = false) {
   }
 
   const quoteResult = await tryAdapters(
-    marketAdapters,
+    getMarketAdaptersForInstrument(instrument),
     'getQuote',
     instrument,
     'quote',
@@ -69,7 +202,7 @@ async function getDashboardData(instrument, forceRefresh = false) {
   );
 
   const newsResult = await tryAdapters(
-    newsAdapters,
+    getNewsAdaptersForInstrument(instrument),
     'getNews',
     instrument,
     'news',
@@ -262,5 +395,6 @@ async function getWatchlistData(instruments) {
 module.exports = {
   getDashboardData,
   getWatchlistData,
-  getProviderStatus
+  getProviderStatus,
+  runProviderDiagnostics
 };

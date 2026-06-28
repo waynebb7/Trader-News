@@ -8,6 +8,34 @@ class PoliticalEventsAdapter extends BaseAdapter {
     super('politicalEvents');
   }
 
+  decodeHtmlEntities(text) {
+    return text
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  sanitizeTitle(text) {
+    const stripped = this.decodeHtmlEntities(
+      String(text || '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    );
+
+    // Filter out malformed fragments and archive labels that are not events.
+    if (!stripped) return '';
+    if (/^https?:\/\//i.test(stripped)) return '';
+    if (/\/>|href=|page\/\d+/i.test(stripped)) return '';
+    if (/archives?/i.test(stripped)) return '';
+
+    return stripped.slice(0, 120);
+  }
+
   isConfigured() {
     return true;
   }
@@ -48,11 +76,15 @@ class PoliticalEventsAdapter extends BaseAdapter {
       });
       if (!res.ok) return events;
       const html = await res.text();
-      const titleMatches = html.match(/briefing[^<]{0,80}/gi) || [];
+      const titleMatches = [...html.matchAll(/<a[^>]*href="[^"]*briefings-statements[^"]*"[^>]*>([\s\S]*?)<\/a>/gi)]
+        .map(m => this.sanitizeTitle(m[1]))
+        .filter(Boolean)
+        .filter((title, idx, all) => all.indexOf(title) === idx);
+
       for (let i = 0; i < Math.min(3, titleMatches.length); i++) {
         events.push({
           id: `wh-${i}`,
-          eventName: titleMatches[i].trim().slice(0, 120) || 'White House Briefing',
+          eventName: titleMatches[i] || 'White House Briefing',
           dateTime: new Date().toISOString(),
           source: 'White House',
           status: 'unknown',
